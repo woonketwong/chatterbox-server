@@ -1,17 +1,19 @@
 /* Import node's http module: */
 var http = require("http");
-
+var requestHandler = require("./request-handler");
 /* This is the callback function that will be called each time a
  * client (i.e.. a web browser) makes a request to our server. */
+
 var requestListener = function (request, response) {
 
   /* Request is an http.ServerRequest object containing various data
    * about the client request - such as what URL the browser is
    * requesting. */
   console.log("Serving request type " + request.method + " for url " + request.url);
-
   /* "Status code" and "headers" are HTTP concepts that you can
    * research on the web as and when it becomes necessary. */
+  requestHandler.handleRequest(request, response);
+
   var statusCode = 200;
 
   /* Without this line, this server wouldn't work.  See the note
