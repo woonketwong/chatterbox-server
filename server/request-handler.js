@@ -3,49 +3,90 @@
  * basic-server.js.  So you must figure out how to export the function
  * from this file and include it in basic-server.js. Check out the
  * node module documentation at http://nodejs.org/api/modules.html. */
+
 var url = require("url");
-var querystring = require("querystring");
+var qs = require("querystring");
+var util = require('util');
 
+var messages = [
+{"username":"anonymous",
+"text":"My name is Emma and i HATE BREAD SO MUCH",
+"roomname":"lobby",
+"createdAt":"2013-10-14T23:07:06.924Z",
+"updatedAt":"2013-10-14T23:07:06.924Z",
+"objectId":"zLoL5bpSVP"}
+];
 var http = require("http");
+//populate messages here
 
-var handleRequest = function(request, response) {
-	console.log(request.url)
+exports.handleRequest = function(request, response) {
+
+  console.log("Serving request type " + request.method + " for url " + request.url);
+
+  var requestType = request.method;
   var pathname = url.parse(request.url).pathname;
-  var keyValueString = url.parse(request.url).query;
-  var keyValueObject = querystring.parse(keyValueString);
-  console.log('here ', keyValueObject);
-  //var queryString = url.querystring.parse(url.parse(request.url).query);
-  console.log("Request for " + pathname + " received.");
-  console.log("Query Strings: " + keyValueObject + " received.");
-  
-    //route(pathname);
+  var querystring = qs.parse(url.parse(request.url).query);
+
+  console.log(' ');
+  console.log(requestType);
+  console.log(pathname);
+  console.log(querystring); 
+
+  route(requestType, pathname, querystring, request, response);
 
 };
 
-var route = function(pathname){
+var defaultCorsHeaders = {
+  "access-control-allow-origin": "*",
+  "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
+  "access-control-allow-headers": "content-type, accept",
+  "access-control-max-age": 10 // Seconds.
+};
 
-}
+var route = function(requestType, pathname, querystring, request, response){
 
+    console.log('querystring: ', querystring);  
+    console.log("requestType: ", requestType);
 
-exports.handleRequest = handleRequest;
+    var statusCode = 200;
+    var headers = defaultCorsHeaders;
 
+  if(requestType === 'OPTIONS'){
+    // headers['Content-Type'] = "application/javascript";
+    // headers['Content-Length'] = querystring.length;
+    response.writeHead(statusCode, headers);
+    response.end();
+  }
 
-// querystring.parse('foo=bar&baz=qux&baz=quux&corge')
-// // returns
-// { foo: 'bar', baz: ['qux', 'quux'], corge: '' }
+  if(pathname === '/1/classes/chatterbox' && requestType === 'GET'){
+    var stringifiedMsg = JSON.stringify({results: messages});
+    response.writeHead(statusCode, headers);
+    response.end(stringifiedMsg);
+  }else if(requestType === 'POST'){
+    console.log("[200] " + requestType + " to " + pathname);
+    var fullBody = '';
+    
+    request.on('data', function(chunk) {
+      // append the current chunk of data to the fullBody variable
+      fullBody += chunk.toString();
+    });
+    
+    request.on('end', function() {
+    
+      // response ended -> do something with the data
+      response.writeHead(200, headers);//{'Content-Type': 'text/html'});
+      
+      // parse the received body data
+      console.log("Before parsing: ", fullBody);
+      var decodedBody = qs.parse(fullBody);
+      console.log("After parsing: ", decodedBody);
 
+      // output the decoded data to the HTTP response
+      response.write('<html><head><title>Post data</title></head><body><pre>');
+      response.write(util.inspect(decodedBody));
+      response.write('</pre></body></html>');
+      response.end();
+    });
+  }
 
-
-//                        url.parse(string).query
-//                                            |
-//            url.parse(string).pathname      |
-//                        |                   |
-//                        |                   |
-//                      ------ -------------------
-// http://localhost:8888/start?foo=bar&hello=world
-//                                 ---       -----
-//                                  |          |
-//                                  |          |
-//               querystring(string)["foo"]    |
-//                                             |
-//                          querystring(string)["hello"]
+};

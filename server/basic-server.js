@@ -1,19 +1,18 @@
 /* Import node's http module: */
 var http = require("http");
-var requestHandler = require("./request-handler");
+var requestHandler = require("./request-handler.js");
+
 /* This is the callback function that will be called each time a
  * client (i.e.. a web browser) makes a request to our server. */
-
 var requestListener = function (request, response) {
 
   /* Request is an http.ServerRequest object containing various data
    * about the client request - such as what URL the browser is
    * requesting. */
   console.log("Serving request type " + request.method + " for url " + request.url);
+
   /* "Status code" and "headers" are HTTP concepts that you can
    * research on the web as and when it becomes necessary. */
-  requestHandler.handleRequest(request, response);
-
   var statusCode = 200;
 
   /* Without this line, this server wouldn't work.  See the note
@@ -63,7 +62,7 @@ var ip = "127.0.0.1";
 
 /* Use node's http module to create a server and start it listening on
  * the given port and IP. */
-var server = http.createServer(requestListener);
+var server = http.createServer(requestHandler.handleRequest);
 console.log("Listening on http://" + ip + ":" + port);
 server.listen(port, ip);
 
