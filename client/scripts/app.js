@@ -4,13 +4,16 @@ var thisUser = {
   friends: {}
 };
 
+//var url = 'http://127.0.0.1:8080/1/classes/chatterbox'
+var msgsUrl = 'http://127.0.0.1:8080/classes/messages';
+
 var rooms = {"lobby": true};
 var lastMessage = 0;
 $(document).ready(function(){
   console.log("Hi");
   getUserName();
   getMessages();
-  var cycleNewMessages = setInterval(getMessages, 1000);
+  var cycleNewMessages = setInterval(getMessages, 3000);
 
   $('#submitChat').on('click', function(e){
     e.preventDefault();
@@ -80,8 +83,9 @@ var getUserName = function() {
 };
 
 var sendMessages = function(newChatMessage){
+  console.log("send message");
   $.ajax({
-    url: 'https://api.parse.com/1/classes/chatterbox',
+    url: msgsUrl,
     type: 'POST',
     data: JSON.stringify(newChatMessage),
     contentType: 'application/json',
@@ -97,18 +101,22 @@ var sendMessages = function(newChatMessage){
 
 var getMessages = function(){
   $.ajax({
-    url: 'https://api.parse.com/1/classes/chatterbox',
+    url: msgsUrl,
     type: 'GET',
-    data: { order: '-createdAt' },
-    contentType: 'application/json',
+    //data: { order: '-createdAt' },
+    //contentType: 'application/json',
+    dataType: "json",
     success: function (data) {
+      console.log(data);
       addNewMessages(data.results);
+      console.log(JSON.stringify(data.results[0]));
     },
     error: function (data) {
       // see: https://developer.mozilla.org/en-US/docs/Web/API/console.error
       console.error('chatterbox: Failed to send message');
     }
   });
+
 };
 
 var addNewMessages = function(messages) {

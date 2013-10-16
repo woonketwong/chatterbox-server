@@ -25,12 +25,10 @@ function StubResponse() {
   this._data = null;
   var self = this;
   this.writeHead = function(responseCode, headers) {
-    console.log("WriteHead called with " + responseCode);
     self._responseCode = responseCode;
     self._headers = headers;
   };
   this.end = function(data) {
-    console.log("Response.end called.");
     self._ended = true;
     self._data = data;
   };
@@ -45,7 +43,7 @@ describe("Node Server Request Listener Function", function() {
    handler.handleRequest(req, res);
 
    expect(res._responseCode).toEqual(200);
-   expect(res._data).toEqual("[]");
+   expect(res._data).toEqual('{"results":[]}');
    expect(res._ended).toEqual(true);
  });
 
@@ -55,9 +53,7 @@ describe("Node Server Request Listener Function", function() {
                             {username: "Jono",
                              message: "Do my bidding!"});
    var res = new StubResponse();
-
    handler.handleRequest(req, res);
-
    // Expect 201 Created response status
    expect(res._responseCode).toEqual(201);
 
@@ -76,9 +72,9 @@ describe("Node Server Request Listener Function", function() {
 
    expect(res._responseCode).toEqual(200);
    var messageLog = JSON.parse(res._data);
-   expect(messageLog.length).toEqual(1);
-   expect(messageLog[0].username).toEqual("Jono");
-   expect(messageLog[0].message).toEqual("Do my bidding!");
+   expect(messageLog['results'].length).toEqual(1);
+   expect(messageLog['results'][0].username).toEqual("Jono");
+   expect(messageLog['results'][0].message).toEqual("Do my bidding!");
    expect(res._ended).toEqual(true);
  });
 
@@ -89,7 +85,6 @@ describe("Node Server Request Listener Function", function() {
    var res = new StubResponse();
 
    handler.handleRequest(req, res);
-   console.log("Res is " + res);
 
    // Wait some time before checking results:
    waits(1000);
